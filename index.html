@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I KNOW YOU</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    cursor: none;
+  }
+
+  /* ── ESCENA 1: Video ── */
+  #scene-video {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    z-index: 10;
+  }
+
+  #scene-video video {
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+  }
+
+  /* ── ESCENA 2: I KNOW YOU + fotos ── */
+  #scene-iknow {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    display: none;
+    z-index: 10;
+    overflow: hidden;
+    cursor: none;
+  }
+
+  #iknow-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: clamp(3rem, 12vw, 9rem);
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    color: #fff;
+    z-index: 20;
+    text-align: center;
+    pointer-events: none;
+    mix-blend-mode: difference;
+  }
+
+  #photos-container {
+    position: absolute;
+    inset: 0;
+    z-index: 15;
+  }
+
+  .floating-photo {
+    position: absolute;
+    object-fit: cover;
+    opacity: 0;
+    animation: fadeInPhoto 0.4s forwards;
+    background: #fff;
+  }
+
+  @keyframes fadeInPhoto {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 0.9; transform: scale(1); }
+  }
+
+  #click-hint {
+    position: absolute;
+    bottom: 2.5rem;
+    width: 100%;
+    text-align: center;
+    font-size: 0.85rem;
+    letter-spacing: 0.3em;
+    color: rgba(255,255,255,0.4);
+    z-index: 25;
+    animation: blink 1.5s infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 0.4; }
+    50%       { opacity: 1; }
+  }
+
+  /* ── ESCENA 3: ¿Quién eres? / input nombre ── */
+  #scene-name {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    display: none;
+    z-index: 10;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
+  }
+
+  #scene-name h2 {
+    font-size: clamp(1.5rem, 5vw, 3rem);
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-align: center;
+    color: #fff;
+  }
+
+  #name-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.5);
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    font-size: clamp(1.2rem, 4vw, 2rem);
+    text-align: center;
+    width: min(80vw, 500px);
+    padding: 0.5rem 0;
+    outline: none;
+    letter-spacing: 0.15em;
+  }
+
+  #name-input::placeholder { color: rgba(255,255,255,0.2); }
+
+  #name-submit {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.4);
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 0.4em;
+    padding: 0.75rem 2.5rem;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  #name-submit:hover {
+    border-color: #fff;
+    color: #fff;
+  }
+
+  /* ── ESCENA 4: Saturación del nombre ── */
+  #scene-names {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    display: none;
+    z-index: 10;
+    overflow: hidden;
+  }
+
+  .name-token {
+    position: absolute;
+    font-family: 'Courier New', monospace;
+    font-weight: 900;
+    color: #fff;
+    pointer-events: none;
+    animation: glitchFade 0.3s forwards;
+    white-space: nowrap;
+  }
+
+  @keyframes glitchFade {
+    0%   { opacity: 0; transform: skewX(10deg) scale(0.9); }
+    60%  { opacity: 1; transform: skewX(-3deg) scale(1.02); }
+    100% { opacity: 0.85; transform: skewX(0) scale(1); }
+  }
+
+  /* ── ESCENA 5: Mensaje final ── */
+  #scene-final {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    display: none;
+    z-index: 10;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  #scene-final p {
+    font-size: clamp(1.2rem, 4vw, 2.5rem);
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-align: center;
+    color: #fff;
+    animation: slowAppear 2s forwards;
+  }
+
+  @keyframes slowAppear {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* ── ESCENA 0: Entrada ── */
+  #scene-enter {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    cursor: pointer;
+  }
+
+  #scene-enter p {
+    font-size: clamp(0.8rem, 2vw, 1rem);
+    letter-spacing: 0.5em;
+    color: rgba(255,255,255,0.5);
+    animation: blink 1.5s infinite;
+  }
+
+  /* ── Transición de escenas ── */
+  .fade-out {
+    animation: fadeOutScene 0.8s forwards !important;
+  }
+
+  @keyframes fadeOutScene {
+    from { opacity: 1; }
+    to   { opacity: 0; pointer-events: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ESCENA 0: Entrada -->
+<section id="scene-enter">
+  <p>— clic para comenzar —</p>
+</section>
+
+<!-- ESCENA 1: Video -->
+<section id="scene-video">
+  <video id="main-video" autoplay playsinline>
+    <source src="video.mp4" type="video/mp4">
+  </video>
+</section>
+
+<!-- ESCENA 2: I KNOW YOU + fotos -->
+<section id="scene-iknow">
+  <div id="iknow-text">I KNOW YOU</div>
+  <div id="photos-container"></div>
+  <div id="click-hint">— clic para continuar —</div>
+</section>
+
+<!-- ESCENA 3: Nombre -->
+<section id="scene-name">
+  <h2>¿Tú sabes quién eres?</h2>
+  <input id="name-input" type="text" placeholder="escribe tu nombre" maxlength="40" autocomplete="off" spellcheck="false">
+  <button id="name-submit">CONTINUAR</button>
+</section>
+
+<!-- ESCENA 4: Saturación de pseudónimos -->
+<section id="scene-names">
+</section>
+
+<!-- ESCENA 5: Final -->
+<section id="scene-final">
+  <p>¿Eso es lo que eres?</p>
+</section>
+
+<script>
+  const TOTAL_IMAGES = 36;
+  const IMG_EXT = 'png';
+
+  // ─── Prefixes para generar seudónimos ───
+  const prefixes = ['dark_','real_','true_','not_','just_','only_','the_','ur_','xo_','idk_','ok_','lol_','_anon','_alt','_yo','_me','_self'];
+  const suffixes = ['_99','_2k','_real','_x','_2','_ok','_alt','_?','_lol','_no','_404','_deleted','_hidden','_lost'];
+  const separators = ['.','_','-',''];
+
+  function makePseudo(name) {
+    const n = name.toLowerCase().replace(/\s+/g, '_');
+    const roll = Math.random();
+    if (roll < 0.3) return prefixes[Math.floor(Math.random()*prefixes.length)] + n;
+    if (roll < 0.6) return n + suffixes[Math.floor(Math.random()*suffixes.length)];
+    const sep = separators[Math.floor(Math.random()*separators.length)];
+    const pre = prefixes[Math.floor(Math.random()*prefixes.length)].replace(/_/g,'');
+    return pre + sep + n + suffixes[Math.floor(Math.random()*suffixes.length)];
+  }
+
+  function glitchChar(str) {
+    const glyphs = ['▓','░','▒','█','■','□','▪','▫','▸','◀','◆','◇','◉','◎'];
+    return str.split('').map(c =>
+      Math.random() < 0.15 ? glyphs[Math.floor(Math.random()*glyphs.length)] : c
+    ).join('');
+  }
+
+  // ─── Escena 0: entrada (desbloquea audio) ───
+  const enterScreen = document.getElementById('scene-enter');
+  enterScreen.addEventListener('click', () => {
+    enterScreen.classList.add('fade-out');
+    setTimeout(() => {
+      enterScreen.style.display = 'none';
+      video.play();
+    }, 800);
+  });
+
+  // ─── Escena 1 → 2 ───
+  const video = document.getElementById('main-video');
+  video.addEventListener('ended', startScene2);
+  setTimeout(startScene2, 31000); // fallback
+
+  function startScene2() {
+    const s1 = document.getElementById('scene-video');
+    s1.classList.add('fade-out');
+    setTimeout(() => {
+      s1.style.display = 'none';
+      const s2 = document.getElementById('scene-iknow');
+      s2.style.display = 'block';
+      spawnPhotos();
+    }, 800);
+  }
+
+  // ─── Fotos flotantes ───
+  let photoInterval;
+  function spawnPhotos() {
+    const container = document.getElementById('photos-container');
+    let count = 0;
+    const sizes = [80,100,120,150,180,200,240,280,320];
+
+    photoInterval = setInterval(() => {
+      const img = document.createElement('img');
+      const idx = (count % TOTAL_IMAGES) + 1;
+      img.src = `img${idx}.${IMG_EXT}`;
+      img.classList.add('floating-photo');
+      const size = sizes[Math.floor(Math.random()*sizes.length)];
+      const w = size + Math.floor(Math.random()*60);
+      const h = size + Math.floor(Math.random()*40);
+      img.style.width  = w + 'px';
+      img.style.height = h + 'px';
+      img.style.left   = Math.random() * (window.innerWidth - w) + 'px';
+      img.style.top    = Math.random() * (window.innerHeight - h) + 'px';
+      img.style.zIndex = Math.floor(Math.random()*10) + 1;
+      img.style.transform = `rotate(${(Math.random()-0.5)*12}deg)`;
+      container.appendChild(img);
+      count++;
+    }, 180);
+
+    document.getElementById('scene-iknow').addEventListener('click', goToScene3);
+  }
+
+  // ─── Escena 2 → 3 ───
+  function goToScene3() {
+    clearInterval(photoInterval);
+    const s2 = document.getElementById('scene-iknow');
+    s2.classList.add('fade-out');
+    setTimeout(() => {
+      s2.style.display = 'none';
+      const s3 = document.getElementById('scene-name');
+      s3.style.display = 'flex';
+      document.getElementById('name-input').focus();
+    }, 800);
+  }
+
+  // ─── Escena 3 → 4 ───
+  document.getElementById('name-submit').addEventListener('click', goToScene4);
+  document.getElementById('name-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') goToScene4();
+  });
+
+  function goToScene4() {
+    const nameVal = document.getElementById('name-input').value.trim();
+    if (!nameVal) return;
+
+    const s3 = document.getElementById('scene-name');
+    s3.classList.add('fade-out');
+    setTimeout(() => {
+      s3.style.display = 'none';
+      startNameSaturation(nameVal);
+    }, 800);
+  }
+
+  // ─── Saturación de nombre ───
+  function startNameSaturation(name) {
+    const s4 = document.getElementById('scene-names');
+    s4.style.display = 'block';
+
+    const fontSizes = [14,18,22,28,36,48,60,72,90,110];
+    let tokenCount = 0;
+    const maxTokens = 280;
+
+    function addToken() {
+      if (tokenCount >= maxTokens) {
+        clearInterval(nameInterval);
+        setTimeout(goToScene5, 1500);
+        return;
+      }
+      const span = document.createElement('span');
+      span.classList.add('name-token');
+
+      const pseudo = makePseudo(name);
+      span.textContent = glitchChar(pseudo);
+
+      const fs = fontSizes[Math.floor(Math.random()*fontSizes.length)];
+      span.style.fontSize = fs + 'px';
+      span.style.left = Math.random() * (window.innerWidth - 300) + 'px';
+      span.style.top  = Math.random() * (window.innerHeight - 80) + 'px';
+      span.style.opacity = (0.4 + Math.random()*0.6).toString();
+      span.style.color = Math.random() < 0.15 ? '#ff0033' : '#fff';
+      span.style.animationDelay = (Math.random()*0.2) + 's';
+
+      s4.appendChild(span);
+      tokenCount++;
+    }
+
+    const nameInterval = setInterval(addToken, 80);
+    addToken();
+  }
+
+  // ─── Escena 4 → 5 ───
+  function goToScene5() {
+    const s4 = document.getElementById('scene-names');
+    s4.classList.add('fade-out');
+    setTimeout(() => {
+      s4.style.display = 'none';
+      const s5 = document.getElementById('scene-final');
+      s5.style.display = 'flex';
+    }, 800);
+  }
+</script>
+</body>
+</html>
